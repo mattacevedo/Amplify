@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <script>
+    // prompts the server-side code to return the settings
+    google.script.run.withSuccessHandler(onSuccess_getAmplifySettings).getAmplifySettings();
+
+    function onSuccess_getAmplifySettings(settings) {
+
+      // Access the settings returned by the server-side code
+      var apiKey = settings.apiKey;
+      var maxTokens = settings.maxTokens;
+      var gptModel = settings.gptModel;
+      var gptTemperature = settings.gptTemperature;
+      var imageResolution = settings.imageResolution;
+      var imageInsertionSize = settings.imageInsertionSize;
+
+      // preload the fields with the existing settings if there are any
+      if (apiKey) document.getElementById("api-key").value = apiKey;
+      if (maxTokens) document.getElementById("max-tokens").value = maxTokens;
+      else document.getElementById("max-tokens").value = 200;
+      if (gptTemperature) document.getElementById("temperature").value = gptTemperature;
+      else document.getElementById("temperature").value = 0.7;
+
+      switch (gptModel) {
+        case "text-davinci-003":
+          document.getElementById("model").selectedIndex = 0;
+          break;
+        case "text-curie-001":
+          document.getElementById("model").selectedIndex = 1;
+          break;
+        case "text-babbage-001":
+          document.getElementById("model").selectedIndex = 2;
+          break;
+        case "text-ada-001":
+          document.getElementById("model").selectedIndex = 3;
+          break;
+        default:
+          document.getElementById("model").selectedIndex = 0;
+          break;
+      }
+
+      switch (imageResolution) {
+        case "1024x1024":
+          document.getElementById("resolution").selectedIndex = 0;
+          break;
+        case "512x512":
+          document.getElementById("resolution").selectedIndex = 1;
+          break;
+        case "256x256":
+          document.getElementById("resolution").selectedIndex = 2;
+          break;
+        default:
+          document.getElementById("resolution").selectedIndex = 0;
+          break;
+      }
+
+      switch (imageInsertionSize) {
+        case 1:
+          document.getElementById("insertionSize").selectedIndex = 0;
+          break;
+        case 0.75:
+          document.getElementById("insertionSize").selectedIndex = 1;
+          break;
+        case 0.5:
+          document.getElementById("insertionSize").selectedIndex = 2;
+          break;
+        case 0.25:
+          document.getElementById("insertionSize").selectedIndex = 3;
+          break;
+        case .1:
+          document.getElementById("insertionSize").selectedIndex = 4;
+          break;
+        default:
+          document.getElementById("insertionSize").selectedIndex = 3;
+          break;
+      }
+    }
+
+    function saveSettings() {
+
+      var apiKey = document.getElementById("api-key").value;
+      var maxTokens = document.getElementById("max-tokens").value;
+      var gptTemperature = document.getElementById("temperature").value;
+
+      var gptModel;
+      switch (document.getElementById("model").selectedIndex) {
+        case 0:
+          gptModel = "text-davinci-003";
+          break;
+        case 1:
+          gptModel = "text-curie-001";
+          break;
+        case 2:
+          gptModel = "text-babbage-001";
+          break;
+        case 3:
+          gptModel = "text-ada-001";
+          break;
+      }
+
+      var imageInsertionSize;
+      switch (document.getElementById("insertionSize").selectedIndex) {
+        case 0:
+          imageInsertionSize = 1;
+          break;
+        case 1:
+          imageInsertionSize = 0.75;
+          break;
+        case 2:
+          imageInsertionSize = 0.5;
+          break;
+        case 3:
+          imageInsertionSize = 0.25;
+          break;
+        case 4:
+          imageInsertionSize = 0.1;
+          break;
+      }
+
+      var imageResolution;
+      switch (document.getElementById("resolution").selectedIndex) {
+        case 0:
+          imageResolution = "1024x1024";
+          break;
+        case 1:
+          imageResolution = "512x512";
+          break;
+        case 2:
+          imageResolution = "256x256";
+          break;
+      }
+
+      let settingsObject = {
+
+        apiKey: apiKey,
+        maxTokens: maxTokens,
+        gptTemperature: gptTemperature,
+        gptModel: gptModel,
+        imageResolution: imageResolution,
+        imageInsertionSize: imageInsertionSize
+
+      };
+
+      return (settingsObject);
+    }
+
+    function saveAndClose() {
+
+      // causes the server-side code [getSettings()] to grab the settingsObject from saveSettings()
+      var settingsObject = saveSettings();
+
+      google.script.run.withSuccessHandler(onSuccess_GetSettings).getSettings(settingsObject);
+    }
+
+    function onSuccess_GetSettings() {
+
+      // if the server-side code got the settings, close the dialog window
+      google.script.host.close();
+    }
+  </script>
+
+
+  <title>Amplify Settings</title>
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    input,
+    button {
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 12px 12px 12px margin: 15px;
+    }
+
+    .explainer {
+      color: gray;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>OpenAI API Key</h1>
+  <br>
+  <label for="api-key">Enter your OpenAI API key:</label><br><br>
+  <input type="text" id="api-key" name="api-key" size="75" value="">
+  <p class='explainer'>For Amplify to work, you need an <a href="https://platform.openai.com/account/api-keys"
+      target="_blank">OpenAI API key</a>. This is how you pay for using the AI technology. Most operations cost a couple
+    cents, so personal use is generally very inexpensive.</p>
+  <br>
+
+
+  <hr>
+  <br>
+  <h1>Text Amplification Options</h1>
+  <br>
+  <label for="model">Model:</label>
+  <select id="model" name="model">
+        <option value="text-davinci-003">text-davinci-003</option>
+        <option value="text-curie-001">text-curie-001</option>
+        <option value="text-babbage-001">text-babbage-001</option>
+        <option value="text-ada-001">text-ada-001</option>
+      </select>
+  <p class='explainer'>This selects the GPT-3 model that Amplifer will use. Not sure which one to pick? DaVinci is the
+    most advanced but also the most expensive. <a href="https://platform.openai.com/docs/models/gpt-3"
+      target="_blank">Read more about each of the models.</a></p>
+  <br>
+  <label for="max-tokens">Maximum Tokens:</label>
+  <input type="number" max="4000" min="1" id="max-tokens" name="max-tokens" size="3">
+  <p class='explainer'>Maximum tokens refers to how long the request and response should be. Different models have
+    different maximums (DaVinci's maximum is 4,000 tokens; the others' maximums are 2,048). If you're unsure, stick with
+    the default of 200. <a href="https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them"
+      target="_blank">Read more about tokens at the OpenAI site.</a></p>
+  <br>
+  <label for="temperature">Temperature:</label>
+  <input type="number" step="0.01" max="1" min="0" id="temperature" name="temperature" size="3">
+  <p class='explainer'>Temperature refers to how random the response is on a scale of 0 to 1, where 0 is very
+    deterministic (boring/predictable) and 1 is random (creative/bizarre). If you're unsure, start with a default of
+    0.7.</p>
+  <br>
+  <hr>
+  <br>
+  <h1>Image Generation Options</h1>
+  <br>
+  <label for="resolution">Resolution:</label>
+  <select id="resolution" name="resolution">
+        <option value="1024x1024">1024x1024</option>
+        <option value="512x512">512x512</option>
+        <option value="256x256">256x256</option>
+      </select>
+  <p class='explainer'>This option selects the resolution of your AI-generated image. Larger images cost a little bit
+    more.</p>
+  <br>
+  <label for="insertionSize">Insertion size:</label>
+  <select id="insertionSize" name="insertionSize">
+        <option value="100%">100%</option>
+        <option value="75%">75%</option>
+        <option value="50%">50%</option>
+        <option value="25%">25%</option>
+        <option value="10%">10%</option>
+      </select>
+  <p class='explainer'>Generated images will be inserted into the document at this size, although you can still adjust
+    the size afterwards. A 1024x1024 image at 100% will be wider than a standard page.</p>
+  </select>
+  <br>
+
+  <div style="text-align:center;">
+    <button type="button" id="save-btn" onclick="saveAndClose()">Save</button>
+    <button type="button" id="cancel-btn" onclick="google.script.host.close();">Cancel</button>
+  </div>
+
+  <br><br>
+</body>
+
+</html>
